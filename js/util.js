@@ -16,21 +16,21 @@ function newGuid() {
 
 // triggers a download of the provided data-uri
 function downloadURI(uri, name) {
-    let link = document.createElement("a");
-    link.download = name;
-    link.href = uri;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    delete link;
+    const image = new Image();
+    image.src = uri;
+    const w = window.open('');
+    w.document.write(image.outerHTML);
 }
 
 // take a snapshot of what's on the fabric wrapped canvas
 function exportCanvas(fabricCanvas, originalUrlWithExtension) {
+    const scale = fabricCanvas.viewportTransform[0];
+    const unscale = scale !== 0 ? 1 / scale : 1;
     const lossless = (originalUrlWithExtension.endsWith('.bmp') || originalUrlWithExtension.endsWith('.png'));
     const fmt = lossless ? 'png' : 'jpeg';
     const canvasCapture = fabricCanvas.toDataURL({
-        format: fmt
+        format: fmt,
+        multiplier: unscale
     });
     downloadURI(canvasCapture, newGuid() + '.' + fmt);
 }

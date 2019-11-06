@@ -4,6 +4,7 @@
 // tpatrick 11/5/19
 
 let canvasTarget;
+let canvasViewportScale;
 
 let currentUrl;
 let currentColor = '#FF0000';
@@ -35,9 +36,12 @@ const dragHandleProps = {
     noScaleCache: false,
 };
 
-function buildGenericProps(color, strokeSize, fromx, fromy, tox, toy) {
+function buildGenericProps(fabricCanvas, color, strokeSize, fromx, fromy, tox, toy) {
     const width = Math.abs(tox - fromx);
     const height = Math.abs(toy - fromy);
+
+    const viewportScale = fabricCanvas.viewportTransform[0];
+    const viewportUnscale = viewportScale !== 0 ? (1/viewportScale) : 1;
 
     return {
         left: fromx > tox ? tox : fromx,
@@ -46,7 +50,7 @@ function buildGenericProps(color, strokeSize, fromx, fromy, tox, toy) {
         height: height,
         originX: 'left',
         originY: 'top',
-        strokeWidth: strokeSize,
+        strokeWidth: strokeSize * viewportUnscale,
         stroke: color,
         strokeUniform: true,
         fill: 'rgba(0,0,0,0)',
@@ -88,7 +92,7 @@ function buildArrowShapePoints(fromx, fromy, tox, toy) {
 }
 
 function buildShape(fabricCanvas, type, color, strokeSize, fromx, fromy, tox, toy) {
-    const props = buildGenericProps(color, strokeSize, fromx, fromy, tox, toy);
+    const props = buildGenericProps(fabricCanvas, color, strokeSize, fromx, fromy, tox, toy);
 
     let shapeCanRotate = false;
 
@@ -103,7 +107,8 @@ function buildShape(fabricCanvas, type, color, strokeSize, fromx, fromy, tox, to
             shape = new fabric.Rect({...props, rx: 10, ry: 10});
         break;
         case "dotted-rect":
-            shape = new fabric.Rect({...props, strokeDashArray: [10, 5], strokeWidth: 2, rx: 10, ry: 10});
+            // strokewidth must change if we are dealing with a large image
+            shape = new fabric.Rect({...props, strokeDashArray: [10, 5], strokeWidth: props.strokeWidth / 3, rx: 10, ry: 10});
         break;
         case "ellipse":
             const width = Math.abs(tox - fromx);
@@ -111,7 +116,10 @@ function buildShape(fabricCanvas, type, color, strokeSize, fromx, fromy, tox, to
             shape = new fabric.Ellipse({...props, rx: width/2, ry: height/2});
         break;
         case "txt":
-            shape = new fabric.Textbox("", {...props, fill: currentColor, fontSize: 32, padding: 7, strokeWidth: 1});
+            // fontsize and strokewidth must change if we're working on a small view of a large photo
+            const viewportScale = fabricCanvas.viewportTransform[0];
+            const viewportUnscale = viewportScale !== 0 ? (1/viewportScale) : 1;
+            shape = new fabric.Textbox("", {...props, fill: currentColor, fontSize: 32 * viewportUnscale , padding: 7, strokeWidth: props.strokeWidth / 6 });
         break;
     }
 
@@ -133,9 +141,11 @@ function selectPhoto(url, clear) {
     fabric.Image.fromURL(url, (oImg) => {
         const ratio = Math.min(canvasTarget.width / oImg.width, canvasTarget.height / oImg.height);
         if(clear) canvasTarget.clear();
+        const arr = [ ratio, 0, 0, ratio, 0, 0 ];
+        canvasTarget.setViewportTransform(arr);
         canvasTarget.setBackgroundImage(oImg, canvasTarget.renderAll.bind(canvasTarget), {
-            scaleX: ratio,
-            scaleY: ratio,
+            scaleX: 1,
+            scaleY: 1,
             flipY: false
         });
     });
@@ -189,6 +199,10 @@ function resizeCanvasToWindow(fabricCanvas, url) {
     selectPhoto(url, false); // reload photo and dont clear (reload to recalc scaling)
 }
 
+function bindRadioPaintButton(e) {
+    shapeToMake = e.currentTarget.id.replace('-btn', '');
+    radioButtonSelect(shapeToMake);
+}
 
 function bindPageControls() {
 
@@ -199,20 +213,10 @@ function bindPageControls() {
     chooser.append(new Option('Package', 'img/amazon_pkg.jpg'));
     chooser.on('change', onSelectPhoto);
 
-    $('#ellipse-btn').on('click', () => {
-        shapeToMake = 'ellipse';
-        radioButtonSelect(shapeToMake);
-    });
-
-    $('#rect-btn').on('click', () => {
-        shapeToMake = 'rect';
-        radioButtonSelect(shapeToMake);
-    });
-
-    $('#arrow-btn').on('click', () => {
-        shapeToMake = 'arrow';
-        radioButtonSelect(shapeToMake);
-    });
+    $('#ellipse-btn').on('click', bindRadioPaintButton);
+    $('#rect-btn').on('click', bindRadioPaintButton);
+    $('#txt-btn').on('click', bindRadioPaintButton);
+    $('#arrow-btn').on('click', bindRadioPaintButton);
 
     $('#txt-btn').on('click', () => {
         shapeToMake = 'txt';
