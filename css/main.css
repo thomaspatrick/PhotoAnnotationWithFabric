@@ -1,0 +1,107 @@
+
+body {
+  position: fixed;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  width: 1024px;
+  background-color: black;
+  color: black;
+  min-height: 100%;
+}
+
+h1 {
+  font-size: 32px;
+  margin: 25px;
+}
+
+.clearfloat {
+  clear: left;
+}
+
+.photo-frame {
+  text-align: center;
+  margin-top: 10px;
+  width: 100%;
+  height: 100%;
+}
+
+.photo-select-group {
+  margin: 8px;
+}
+
+.photo-select-group select {
+  color: white;
+  background-color: #ba2323;
+}
+
+.paint-tools {
+  margin: 10px;
+}
+
+.btn-gap {
+  margin-left: 25px;
+}
+
+.paint-tools-btn {
+  display: block;
+  float: left;
+  background-color:#ba2323;
+  padding: 4px;
+  position: relative;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 40px;
+  text-decoration:none;
+  color: #fff;
+  border: solid 1px #831212;
+  background-image: linear-gradient(bottom, rgb(171,27,27) 0%, rgb(212,51,51) 100%);
+  border-radius: 5px;
+}
+
+.paint-tools-btn:active {
+  padding: 5px 3px 3px 5px;
+  top: 1px;
+  background-image: linear-gradient(bottom, rgb(171,27,27) 100%, rgb(212,51,51) 0%);
+}
+
+.paint-tools-btn-radiosel {
+  background-color: #831212;
+}
+
+.colorpicker-panel {
+  float: left;
+  height: 100%;
+  margin: 10px;
+}
+
+.photo-editor {
+  width: 100%;
+  height: 100%;
+}
+
+.photo-target {
+  display: inline-block;
+  float: left;
+  width: 750px;
+  height: 100%;
+}
+
+.text-frame {
+  display: block;
+  width: 250px;
+  height: 100%;
+  margin-top: -10px;
+  margin-left: 10px;
+}
+
+.text-frame pre {
+  width: 100%;
+  height: 600px;
+  color: lightgreen;
+  background: black;
+  overflow-y: scroll;
+  text-align: left;
+  font-size: x-small;
+}
+
+
