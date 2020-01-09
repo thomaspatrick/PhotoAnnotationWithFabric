@@ -192,6 +192,11 @@ function setShapeColor(fabricCanvas, shape, color) {
     fabricCanvas.renderAll();
 }
 
+function setDrawColor(fabricCanvas, color) {
+    fabricCanvas.freeDrawingBrush.color = color;
+    fabricCanvas.renderAll();
+}
+
 function resizeCanvasToWindow(fabricCanvas, url) {
     fabricCanvas.setWidth(document.documentElement.clientWidth);
     fabricCanvas.setHeight(document.documentElement.clientHeight);
@@ -202,6 +207,17 @@ function resizeCanvasToWindow(fabricCanvas, url) {
 function bindRadioPaintButton(e) {
     shapeToMake = e.currentTarget.id.replace('-btn', '');
     radioButtonSelect(shapeToMake);
+    canvasTarget.isDrawingMode = (shapeToMake == 'draw');
+    if(canvasTarget.isDrawingMode)
+    {
+        canvasTarget.freeDrawingBrush = new fabric['PencilBrush'](canvasTarget);
+        canvasTarget.freeDrawingBrush.color = currentColor;
+
+        const viewportScale = canvasTarget.viewportTransform[0];
+        const viewportUnscale = viewportScale !== 0 ? (1/viewportScale) : 1;
+        canvasTarget.freeDrawingBrush.width = currentStrokeWidth * viewportUnscale;
+
+    }
 }
 
 function bindPageControls() {
@@ -217,6 +233,7 @@ function bindPageControls() {
     $('#rect-btn').on('click', bindRadioPaintButton);
     $('#txt-btn').on('click', bindRadioPaintButton);
     $('#arrow-btn').on('click', bindRadioPaintButton);
+    $('#draw-btn').on('click', bindRadioPaintButton);
 
     $('#txt-btn').on('click', () => {
         shapeToMake = 'txt';
@@ -237,6 +254,9 @@ function bindPageControls() {
         const active = canvasTarget.getActiveObject();
         if(active) {
             setShapeColor(canvasTarget, active, currentColor);
+        }
+        if(canvasTarget.isDrawingMode) {
+            setDrawColor(canvasTarget, currentColor);
         }
     });
 
@@ -265,6 +285,7 @@ $(document).ready(()=> {
     radioButtonSelect(shapeToMake);
 
     canvasTarget.on('mouse:down', function() {
+        if(canvasTarget.isDrawingMode) return;
         if(!canvasTarget.getActiveObject()) {
             const pointer = canvasTarget.getPointer(event.e);
             startX = pointer.x;
@@ -275,6 +296,7 @@ $(document).ready(()=> {
     });
 
     canvasTarget.on('mouse:move', function () {
+        if(canvasTarget.isDrawingMode) return;
         if(currentShape) canvasTarget.remove(currentShape);
         if(preDragging && !canvasTarget.getActiveObject()) {
             const pointer = canvasTarget.getPointer(event.e);
@@ -291,6 +313,7 @@ $(document).ready(()=> {
     });
 
     canvasTarget.on('mouse:up', function() {
+        if(canvasTarget.isDrawingMode) return;
         if(currentShape) canvasTarget.remove(currentShape);
         if(!canvasTarget.getActiveObject() && dragging) {
             const pointer = canvasTarget.getPointer(event.e);
@@ -317,4 +340,11 @@ $(document).ready(()=> {
         'object:modified', function () {
             updateModifications();
         });
+
+    canvasTarget.on(
+        'path:created', function (e) {
+            let shape = e.path;
+            shape.set(dragHandleProps);
+        });
+
 });

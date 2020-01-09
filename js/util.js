@@ -37,7 +37,7 @@ function exportCanvas(fabricCanvas, originalUrlWithExtension) {
 
 // radio selects between multiple buttons
 function radioButtonSelect(shapeToMake) {
-    const all = ['ellipse-btn','rect-btn','arrow-btn','txt-btn'];
+    const all = ['ellipse-btn','rect-btn','arrow-btn','draw-btn','txt-btn'];
     $.each(all,function(idx,val) {
         selectButton(val,false);
     });
